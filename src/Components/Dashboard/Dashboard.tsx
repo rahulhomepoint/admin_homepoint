@@ -1,4 +1,4 @@
-import { Card, Tooltip, Avatar } from "flowbite-react";
+import { Avatar } from "flowbite-react";
 import {
   HiOutlineClipboardList,
   HiOutlineCheckCircle,
@@ -8,53 +8,64 @@ import {
   HiOutlineArrowDown,
 } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
-const stats = [
-  {
-    id: 1,
-    name: "Projects Listed",
-    value: 24,
-    icon: <HiOutlineClipboardList className="h-7 w-7 text-blue-600" />,
-    change: 4.2,
-    changeType: "up",
-    compare: "vs 23 last month",
-    route: "/dashboard/lists",
-    tooltip: "View all projects",
-  },
-  {
-    id: 2,
-    name: "Active Domains",
-    value: 18,
-    icon: <HiOutlineCheckCircle className="h-7 w-7 text-emerald-600" />,
-    change: 2.1,
-    changeType: "up",
-    compare: "vs 17 last month",
-    route: "/dashboard/domain-list?status=active",
-    tooltip: "View active domains",
-  },
-  {
-    id: 3,
-    name: "Expired Domains",
-    value: 6,
-    icon: <HiOutlineExclamationCircle className="h-7 w-7 text-red-600" />,
-    change: -1.5,
-    changeType: "down",
-    compare: "vs 7 last month",
-    route: "/dashboard/domain-list?status=expired",
-    tooltip: "View expired domains",
-  },
-  {
-    id: 4,
-    name: "Users",
-    value: 112,
-    icon: <HiOutlineUserGroup className="h-7 w-7 text-purple-600" />,
-    change: 3.8,
-    changeType: "up",
-    compare: "vs 108 last month",
-    route: "/dashboard/users-management",
-    tooltip: "View all users",
-  },
-];
+// Custom hook to fetch active domains count
+function useActiveDomainsCount() {
+  return useQuery({
+    queryKey: ["active-domains-count"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/domains/active-count");
+      if (!res.ok) throw new Error("Failed to fetch active domains count");
+      const data = await res.json();
+      // Expecting { count: number } or similar
+      return data.count ?? data.value ?? data;
+    },
+    refetchOnWindowFocus: false,
+  });
+}
+
+// Custom hook to fetch expired domains count
+function useExpiredDomainsCount() {
+  return useQuery({
+    queryKey: ["expired-domains-count"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/domains/expired-count");
+      if (!res.ok) throw new Error("Failed to fetch expired domains count");
+      const data = await res.json();
+      return data.count ?? data.value ?? data;
+    },
+    refetchOnWindowFocus: false,
+  });
+}
+
+// Custom hook to fetch projects count
+function useProjectsCount() {
+  return useQuery({
+    queryKey: ["projects-count"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/projects-count");
+      if (!res.ok) throw new Error("Failed to fetch projects count");
+      const data = await res.json();
+      return data.count ?? data.value ?? data;
+    },
+    refetchOnWindowFocus: false,
+  });
+}
+
+// Custom hook to fetch users count
+function useUsersCount() {
+  return useQuery({
+    queryKey: ["users-count"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/users-count");
+      if (!res.ok) throw new Error("Failed to fetch users count");
+      const data = await res.json();
+      return data.count ?? data.value ?? data;
+    },
+    refetchOnWindowFocus: false,
+  });
+}
 
 const recentActivity = [
   {
@@ -80,6 +91,82 @@ const recentActivity = [
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const {
+    data: activeCount,
+    isLoading: isActiveLoading,
+    isError: isActiveError,
+  } = useActiveDomainsCount();
+  const {
+    data: expiredCount,
+    isLoading: isExpiredLoading,
+    isError: isExpiredError,
+  } = useExpiredDomainsCount();
+  const {
+    data: projectsCount,
+    isLoading: isProjectsLoading,
+    isError: isProjectsError,
+  } = useProjectsCount();
+  const {
+    data: usersCount,
+    isLoading: isUsersLoading,
+    isError: isUsersError,
+  } = useUsersCount();
+
+  // Replace stats array with dynamic value for Active Domains
+  const stats = [
+    {
+      id: 1,
+      name: "Projects Listed",
+      value: isProjectsLoading ? null : isProjectsError ? "-" : projectsCount,
+      icon: <HiOutlineClipboardList className="h-7 w-7 text-blue-600" />,
+      change: 4.2,
+      changeType: "up",
+      compare: "vs 23 last month",
+      route: "/dashboard/lists",
+      tooltip: "View all projects",
+      isLoading: isProjectsLoading,
+      isError: isProjectsError,
+    },
+    {
+      id: 2,
+      name: "Active Domains",
+      value: isActiveLoading ? null : isActiveError ? "-" : activeCount,
+      icon: <HiOutlineCheckCircle className="h-7 w-7 text-emerald-600" />,
+      change: 2.1,
+      changeType: "up",
+      compare: "vs 17 last month",
+      route: "/dashboard/domain-list?status=active",
+      tooltip: "View active domains",
+      isLoading: isActiveLoading,
+      isError: isActiveError,
+    },
+    {
+      id: 3,
+      name: "Expired Domains",
+      value: isExpiredLoading ? null : isExpiredError ? "-" : expiredCount,
+      icon: <HiOutlineExclamationCircle className="h-7 w-7 text-red-600" />,
+      change: -1.5,
+      changeType: "down",
+      compare: "vs 7 last month",
+      route: "/dashboard/domain-list?status=expired",
+      tooltip: "View expired domains",
+      isLoading: isExpiredLoading,
+      isError: isExpiredError,
+    },
+    {
+      id: 4,
+      name: "Users",
+      value: isUsersLoading ? null : isUsersError ? "-" : usersCount,
+      icon: <HiOutlineUserGroup className="h-7 w-7 text-purple-600" />,
+      change: 3.8,
+      changeType: "up",
+      compare: "vs 108 last month",
+      route: "/dashboard/users-management",
+      tooltip: "View all users",
+      isLoading: isUsersLoading,
+      isError: isUsersError,
+    },
+  ];
 
   return (
     <div className="min-h-[80vh] bg-white py-8 sm:py-12">
@@ -115,7 +202,12 @@ export default function Dashboard() {
               </div>
               <div className="flex items-end gap-2">
                 <span className="text-2xl font-bold text-gray-900">
-                  {stat.value}
+                  {/* Show loading spinner for Active Domains only */}
+                  {stat.isLoading ? (
+                    <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-blue-400 border-t-transparent align-middle"></span>
+                  ) : (
+                    stat.value
+                  )}
                 </span>
                 <span
                   className={`flex items-center rounded px-2 py-0.5 text-xs font-semibold ${
