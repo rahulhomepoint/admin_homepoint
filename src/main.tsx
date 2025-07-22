@@ -30,5 +30,4 @@ createRoot(document.getElementById("root")!).render(
     </StrictMode>
   </BrowserRouter>,
 );
-
 initThemeMode();

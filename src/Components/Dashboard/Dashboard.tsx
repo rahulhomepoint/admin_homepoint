@@ -9,6 +9,7 @@ import {
 } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 // Custom hook to fetch active domains count
 function useActiveDomainsCount() {
@@ -88,6 +89,19 @@ const recentActivity = [
     time: "2 days ago",
   },
 ];
+
+export function SignOut() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Clear authentication data
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    // Optionally clear other sensitive data here
+    // Redirect to login page
+    navigate("/", { replace: true });
+  }, [navigate]);
+  return null;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();

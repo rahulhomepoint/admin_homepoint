@@ -1,6 +1,6 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Button, ButtonGroup, Card } from "flowbite-react";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Card, Modal, ModalHeader, ModalBody, Button } from "flowbite-react";
 import { MdDeleteForever } from "react-icons/md";
 import { Link } from "react-router";
 
@@ -22,10 +22,18 @@ interface Project {
 }
 
 export const ListProject = () => {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["projects"],
     queryFn: fetchProjects,
   });
+
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   if (isLoading) return <div>Loading projects...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;
@@ -37,10 +45,38 @@ export const ListProject = () => {
       ? [data.project]
       : [];
 
-  const handleDelete = (id: string) => {
-    // TODO: Replace with actual delete logic
-    if (window.confirm("Are you sure you want to delete this project?")) {
-      console.log("Delete project with id:", id);
+  const openDeleteModal = (id: string) => {
+    setDeleteId(id);
+    setShowModal(true);
+    setDeleteError(null);
+    setDeleteSuccess(false);
+  };
+
+  const closeDeleteModal = () => {
+    setShowModal(false);
+    setDeleteId(null);
+    setDeleteError(null);
+    setDeleteSuccess(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`http://localhost:3000/projects/${deleteId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete project");
+      setDeleteSuccess(true);
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      setTimeout(() => {
+        closeDeleteModal();
+      }, 1000);
+    } catch (err) {
+      setDeleteError((err as Error).message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -67,7 +103,7 @@ export const ListProject = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleDelete(project._id);
+                  openDeleteModal(project._id);
                 }}
                 title="Delete Project"
               >
@@ -110,6 +146,49 @@ export const ListProject = () => {
           </Link>
         ))}
       </div>
+      {/* Delete Confirmation Modal */}
+      <Modal show={showModal} onClose={closeDeleteModal} popup size="md">
+        <ModalHeader />
+        <ModalBody>
+          <div className="text-center">
+            <MdDeleteForever className="mx-auto mb-4 h-12 w-12 text-red-600" />
+            <h3 className="mb-5 text-lg font-normal text-gray-500">
+              Are you sure you want to delete this project?
+            </h3>
+            {deleteError && (
+              <div className="mb-2 text-sm text-red-600">{deleteError}</div>
+            )}
+            {deleteSuccess && (
+              <div className="mb-2 text-sm text-green-600">
+                Project deleted successfully!
+              </div>
+            )}
+            <div className="flex justify-center gap-4">
+              <Button
+                className="px-6"
+                color={"red"}
+                pill
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleting || deleteSuccess}
+              >
+                {deleting ? "Deleting..." : "Yes, Delete"}
+              </Button>
+              <Button
+                className="px-6"
+                color={"gray"}
+                pill
+                outline
+                size="sm"
+                onClick={closeDeleteModal}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
     </div>
   );
 };

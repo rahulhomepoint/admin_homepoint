@@ -13,6 +13,8 @@ import { HiSun, HiMoon } from "react-icons/hi";
 import { IoIosPartlySunny } from "react-icons/io";
 // import { Link } from "react-router"; // No longer needed
 import Navlogo from "../asset/home_point_logo.svg";
+import { Link } from "react-router";
+import { BiLogOut } from "react-icons/bi";
 
 type NavbarTabProps = {
   changeDrawer: () => void;
@@ -69,7 +71,7 @@ export default function NavbarTab({ changeDrawer }: NavbarTabProps) {
             <span className="text-2xl">{icon}</span>
             <span className="text-base font-medium whitespace-nowrap">
               {greeting},{" "}
-              <span className="text-lg font-bold text-gray-900 dark:text-white">
+              <span className="text-lg font-bold text-gray-900 capitalize dark:text-white">
                 {username}
               </span>
             </span>
@@ -81,25 +83,28 @@ export default function NavbarTab({ changeDrawer }: NavbarTabProps) {
           inline
           label={
             <Avatar
+              placeholderInitials="HP"
               alt="User settings"
-              img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+              img=""
               rounded
             />
           }
         >
           <DropdownHeader>
-            <span className="block text-sm">Bonnie Green</span>
-            <span className="block truncate text-sm font-medium">
+            <span className="block text-sm capitalize">{username}</span>
+            {/* <span className="block truncate text-sm font-medium">
               name@flowbite.com
-            </span>
+            </span> */}
           </DropdownHeader>
           <DropdownItem>Dashboard</DropdownItem>
           <DropdownItem>Settings</DropdownItem>
-          <DropdownItem>Earnings</DropdownItem>
+          {/* <DropdownItem>Earnings</DropdownItem> */}
           <DropdownDivider />
-          <DropdownItem className="bg-red-700 text-white hover:text-black">
-            Sign out
-          </DropdownItem>
+          <Link to={"/dashboard/sign-out"}>
+            <DropdownItem className="bg-red-700 text-white hover:text-black">
+              <BiLogOut className="mr-4 text-xl" /> Sign out
+            </DropdownItem>{" "}
+          </Link>
         </Dropdown>
         <DarkThemeToggle className="mx-2 rounded-full" iconDark={HiSun} />
         <NavbarToggle onClick={changeDrawer} />

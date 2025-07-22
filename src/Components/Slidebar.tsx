@@ -20,6 +20,7 @@ import { HiListBullet, HiQueueList } from "react-icons/hi2";
 import { MdOutlineDomain } from "react-icons/md";
 import { PiSignOut } from "react-icons/pi";
 import Dashboard from "./Dashboard/Dashboard";
+// @ts-ignore
 import AllDomain from "./Domains/AllDomain.jsx";
 import Hero from "./Dashboard/Home/Hero";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -29,6 +30,11 @@ import { FiMonitor } from "react-icons/fi";
 import { BsPersonCircle } from "react-icons/bs";
 import { AddProject } from "./Projects/AddProject.js";
 import { ListProject } from "./Projects/ListProject.js";
+import { SignOut } from "./Dashboard/Dashboard";
+import { Zones } from "./Dashboard/Home/Zones.js";
+import { About } from "./Dashboard/Home/About.js";
+// @ts-ignore
+import Associate_Developers from "./Dashboard/Home/AssociateDevelopers.jsx";
 
 export default function Slidebar() {
   const [Drawer, setDrawer] = useState(false);
@@ -41,7 +47,7 @@ export default function Slidebar() {
   return (
     <>
       <NavbarTab changeDrawer={changeDrawer} />
-      <div className="flex h-[91svh] gap-4">
+      <div className="flex h-[90svh] gap-4">
         {/* Slide bar */}
         <Sidebar
           collapseBehavior={"collapse"}
@@ -55,9 +61,8 @@ export default function Slidebar() {
                 Dashboard
               </SidebarItem>
               <SidebarCollapse icon={HiShoppingBag} label="Home">
-                <SidebarItem href="/dashboard/hero">Home</SidebarItem>
+                <SidebarItem href="/dashboard/hero">Hero</SidebarItem>
                 <SidebarItem href="/dashboard/zones">Zones</SidebarItem>
-                <SidebarItem href="/dashboard/launchaes">Launchaes</SidebarItem>
                 <SidebarItem href="/dashboard/about">About</SidebarItem>
                 <SidebarItem href="/dashboard/associate-developers">
                   Associate Developers
@@ -122,6 +127,13 @@ export default function Slidebar() {
             <Route path="domain-list" element={<AllDomain />} />
             <Route path="add-project" element={<AddProject />} />
             <Route path="lists" element={<ListProject />} />
+            <Route path="sign-out" element={<SignOut />} />
+            <Route path="zones" element={<Zones />} />
+            <Route path="about" element={<About />} />
+            <Route
+              path="associate-developers"
+              element={<Associate_Developers />}
+            />
             {/* Add more routes/components as needed for other sidebar links */}
           </Routes>
         </div>
