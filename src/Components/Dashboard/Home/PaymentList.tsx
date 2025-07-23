@@ -1,37 +1,54 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, Label, FileInput, Spinner } from "flowbite-react";
-import { HiCheck, HiExclamation, HiTrash, HiPencil } from "react-icons/hi";
-import { associateDeveloperApi } from "../../../API/AssociateDeveloper/AssociateDeveloper.api.js";
+import { HiTrash } from "react-icons/hi";
+// @ts-expect-error: No type declaration for JS module
+import paymentListApi from "../../../API/PaymentList.api";
 import { toast } from "react-toastify";
 
-const AssociateDevelopers = () => {
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [editId, setEditId] = useState(null); // null = create mode
+// Type for a payment entry
+interface PaymentEntry {
+  id: string;
+  images: string[];
+  [key: string]: unknown;
+}
+
+// Type for selected image (file or preview)
+type SelectedImage = { file: File | null; preview: string };
+
+const PaymentList = () => {
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
+  const [editId, setEditId] = useState<string | null>(null); // null = create mode
   const queryClient = useQueryClient();
 
-  // Fetch all associate developers
-  const { data: developers, isLoading: isListLoading } = useQuery({
-    queryKey: ["associateDevelopers"],
-    queryFn: associateDeveloperApi.getAssociateDevelopers,
+  // Fetch all payment entries
+  const { data: paymentLists, isLoading: isListLoading } = useQuery({
+    queryKey: ["paymentLists"],
+    queryFn: () =>
+      paymentListApi
+        .getPaymentLists()
+        .then((res: unknown) => (res as { data: PaymentEntry[] }).data),
   });
 
-  // Fetch associate developer data in edit mode
+  // Fetch payment entry in edit mode
   const { data: editData, isLoading: isEditLoading } = useQuery({
-    queryKey: ["associateDeveloper", editId],
+    queryKey: ["paymentList", editId],
     queryFn: () =>
-      editId ? associateDeveloperApi.getAssociateDeveloper(editId) : null,
+      editId
+        ? paymentListApi
+            .getPaymentList(editId)
+            .then((res: unknown) => (res as { data: PaymentEntry }).data)
+        : null,
     enabled: !!editId,
   });
 
-  // console.log(developers.data[0].images);
   // Populate selectedImages with fetched images in edit mode
   useEffect(() => {
     if (editData && editData.images) {
       setSelectedImages(
-        editData.images.map((url) => ({
+        editData.images.map((img: string) => ({
           file: null,
-          preview: url,
+          preview: `data:image/png;base64,${img}`,
         })),
       );
     } else if (!editId) {
@@ -41,13 +58,11 @@ const AssociateDevelopers = () => {
 
   // Unified mutation for create or edit
   const mutation = useMutation({
-    mutationFn: async ({ images, id }) => {
-      // If id is present, update only the images field for the existing developer (PUT)
+    mutationFn: async ({ images, id }: { images: string[]; id?: string }) => {
       if (id) {
-        return associateDeveloperApi.updateAssociateDeveloper(id, { images });
+        return paymentListApi.updatePaymentList(id, { images });
       } else {
-        // If no id, create a new developer with images (POST)
-        return associateDeveloperApi.createAssociateDeveloper({ images });
+        return paymentListApi.createPaymentList({ images });
       }
     },
     onSuccess: () => {
@@ -58,87 +73,85 @@ const AssociateDevelopers = () => {
       );
       setSelectedImages([]);
       setEditId(null);
-      queryClient.invalidateQueries(["associateDevelopers"]);
+      queryClient.invalidateQueries({ queryKey: ["paymentLists"] });
     },
     onError: () => {
       toast.error("Error submitting images. Please try again.");
     },
   });
 
-  const handleImageChange = (e) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const filesArray = Array.from(e.target.files).map((file) => ({
-        file,
-        preview: URL.createObjectURL(file),
-      }));
+      const filesArray: SelectedImage[] = Array.from(e.target.files).map(
+        (file) => ({
+          file,
+          preview: URL.createObjectURL(file),
+        }),
+      );
       setSelectedImages((prevImages) => [...prevImages, ...filesArray]);
     }
   };
 
-  const removeImage = (imageToRemove) => {
+  const removeImage = (imageToRemove: SelectedImage) => {
     setSelectedImages((prevImages) =>
       prevImages.filter((image) => image !== imageToRemove),
     );
   };
 
-  const fileToBase64 = (file) => {
+  const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
-        // Remove the "data:image/png;base64," or similar prefix
-        const base64String = reader.result.split(",")[1];
+        const base64String = (reader.result as string).split(",")[1];
         resolve(base64String);
       };
       reader.onerror = (error) => reject(error);
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (selectedImages.length === 0) {
       toast.error("Please select images to upload.");
       return;
     }
-
-    // Convert all files to base64
     const base64Images = await Promise.all(
       selectedImages.map(async (img) => {
         if (img.file) {
           return await fileToBase64(img.file);
         }
         // If already a base64 string (editing), just return the preview (assuming it's base64)
-        return img.preview;
+        return img.preview.split(",")[1];
       }),
     );
-
     if (editId) {
       // Append new images to existing images
       const existingImages = editData && editData.images ? editData.images : [];
       const updatedImages = [...existingImages, ...base64Images];
       mutation.mutate({ images: updatedImages, id: editId });
     } else {
-      // If creating, send images for new developer
       mutation.mutate({ images: base64Images });
     }
   };
 
-  // Handler to delete an image from a developer's images array
-  const handleDeleteDevImage = (dev, imgToDelete) => {
-    const imageIndex = dev.images.findIndex((img) => img === imgToDelete);
+  // Handler to delete an image from a payment entry's images array
+  const handleDeletePaymentImage = (
+    payment: PaymentEntry,
+    imgToDelete: string,
+  ) => {
+    const imageIndex = payment.images.findIndex((img) => img === imgToDelete);
     if (imageIndex === -1) return;
-
-    const developerId = dev.id || dev._id; // Use _id if id is not present
-    if (!developerId) {
-      console.error("Developer ID is missing!", dev);
+    const paymentId = payment.id || payment._id;
+    if (!paymentId) {
+      console.error("Payment ID is missing!", payment);
       return;
     }
-
-    associateDeveloperApi
-      .deleteAssociateDeveloperImage(developerId, imageIndex)
+    paymentListApi
+      .removePaymentListImage(paymentId, imageIndex)
       .then(() => {
         toast.success("Image deleted successfully!");
-        queryClient.invalidateQueries(["associateDevelopers"]);
+        queryClient.invalidateQueries({ queryKey: ["paymentLists"] });
       })
       .catch(() => {
         toast.error("Error deleting image. Please try again.");
@@ -147,9 +160,8 @@ const AssociateDevelopers = () => {
 
   return (
     <div className="p-4">
-      {/* Toasts are now handled globally by react-toastify */}
       <Card>
-        <h2 className="mb-4 text-xl font-semibold">Associate Developers</h2>
+        <h2 className="mb-4 text-xl font-semibold">Payment List</h2>
         {editId && isEditLoading ? (
           <div className="mb-4 flex items-center gap-2 text-gray-500">
             <Spinner size="sm" /> Loading images...
@@ -157,14 +169,16 @@ const AssociateDevelopers = () => {
         ) : null}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <Label htmlFor="images" value="Upload Images" />
+            <Label htmlFor="images">Upload Images</Label>
             <FileInput
               id="images"
               multiple
               accept="image/*"
               onChange={handleImageChange}
-              helperText="Select one or more images to upload."
             />
+            <p className="mt-1 text-xs text-gray-500">
+              Select one or more images to upload.
+            </p>
           </div>
           <div className="flex flex-wrap gap-4">
             {selectedImages.map((image, index) => (
@@ -186,11 +200,7 @@ const AssociateDevelopers = () => {
             ))}
           </div>
           <div className="mt-4 flex gap-2">
-            <Button
-              type="submit"
-              isProcessing={mutation.isPending}
-              disabled={mutation.isPending}
-            >
+            <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? (
                 <>
                   <Spinner size="sm" />
@@ -218,32 +228,36 @@ const AssociateDevelopers = () => {
         </form>
       </Card>
       <div className="mt-8">
-        <h3 className="mb-2 text-lg font-semibold">All Associate Developers</h3>
+        <h3 className="mb-2 text-lg font-semibold">All Payment Entries</h3>
         {isListLoading ? (
           <div className="flex items-center gap-2 text-gray-500">
-            <Spinner size="sm" /> Loading developers...
+            <Spinner size="sm" /> Loading payments...
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {(Array.isArray(developers?.data) ? developers.data : developers)
-              ?.length > 0 ? (
-              (Array.isArray(developers?.data)
-                ? developers.data
-                : developers
-              ).map((dev) =>
-                dev.images && dev.images.length > 0
-                  ? dev.images.map((img, index) => (
+            {(Array.isArray(paymentLists)
+              ? paymentLists
+              : (paymentLists?.data ?? [])
+            )?.length > 0 ? (
+              (Array.isArray(paymentLists)
+                ? paymentLists
+                : (paymentLists?.data ?? [])
+              ).map((payment: PaymentEntry) =>
+                payment.images && payment.images.length > 0
+                  ? payment.images.map((img: string, index: number) => (
                       <Card key={index} className="relative *:p-1">
                         <div className="mb-2 flex flex-wrap gap-2">
                           <img
                             key={index}
                             src={`data:image/png;base64,${img}`}
-                            alt={`dev-img-${index}`}
-                            className="rounded border object-cover"
+                            alt={`payment-img-${index}`}
+                            className="rounded object-cover"
                           />
                           <Button
                             type="button"
-                            onClick={() => handleDeleteDevImage(dev, img)}
+                            onClick={() =>
+                              handleDeletePaymentImage(payment, img)
+                            }
                             className="absolute top-1 right-1 z-10 p-2"
                             size="xs"
                             color="red"
@@ -258,9 +272,7 @@ const AssociateDevelopers = () => {
                   : null,
               )
             ) : (
-              <div className="text-gray-500">
-                No associate developers found.
-              </div>
+              <div className="text-gray-500">No payment entries found.</div>
             )}
           </div>
         )}
@@ -269,4 +281,4 @@ const AssociateDevelopers = () => {
   );
 };
 
-export default AssociateDevelopers;
+export default PaymentList;

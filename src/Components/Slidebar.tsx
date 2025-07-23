@@ -35,6 +35,9 @@ import { Zones } from "./Dashboard/Home/Zones.js";
 import { About } from "./Dashboard/Home/About.js";
 // @ts-ignore
 import Associate_Developers from "./Dashboard/Home/AssociateDevelopers.jsx";
+import PaymentList from "./Dashboard/Home/PaymentList.js";
+import { Reviews } from "./Dashboard/Home/Reviews.js";
+import { UserList } from "./Dashboard/User/UserList.js";
 
 export default function Slidebar() {
   const [Drawer, setDrawer] = useState(false);
@@ -68,7 +71,7 @@ export default function Slidebar() {
                   Associate Developers
                 </SidebarItem>
                 <SidebarItem href="/dashboard/reviews">Reviews</SidebarItem>
-                <SidebarItem href="/dashboard/bank-list">Bank List</SidebarItem>
+                <SidebarItem href="/dashboard/banklist">Bank List</SidebarItem>
               </SidebarCollapse>
               <SidebarCollapse icon={HiQueueList} label="Projects">
                 <SidebarItem icon={HiListBullet} href="/dashboard/lists">
@@ -81,7 +84,7 @@ export default function Slidebar() {
               <SidebarCollapse icon={HiUser} label="Users">
                 <SidebarItem
                   icon={HiUserGroup}
-                  href="/dashboard/users-management"
+                  href="/dashboard/userlist"
                 >
                   Users management
                 </SidebarItem>
@@ -130,6 +133,9 @@ export default function Slidebar() {
             <Route path="sign-out" element={<SignOut />} />
             <Route path="zones" element={<Zones />} />
             <Route path="about" element={<About />} />
+            <Route path="banklist" element={<PaymentList />} />
+            <Route path="reviews" element={<Reviews />} />
+            <Route path="userlist" element={<UserList />} />
             <Route
               path="associate-developers"
               element={<Associate_Developers />}

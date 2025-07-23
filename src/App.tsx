@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./Components/Auth/Login";
 // import Dashboard from "./Components/Dashboard/Dashboard";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Bounce } from "react-toastify";
 import NotFound from "./Components/NotFound";
 import ProtectedRoute from "./Components/Auth/ProtectedRoute";
