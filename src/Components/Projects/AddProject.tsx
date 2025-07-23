@@ -26,7 +26,6 @@ import {
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { MdDelete } from "react-icons/md";
-import { useLocation } from "react-router";
 
 // Types for the entire form
 interface ProjectFormValues {
@@ -144,8 +143,6 @@ const submitProject = async (
 };
 
 export const AddProject = () => {
-  const location = useLocation();
-  const { viewData } = location.state || {};
   // console.log("these value is the ", viewData);
 
   const {
@@ -157,7 +154,6 @@ export const AddProject = () => {
     watch,
     reset,
     clearErrors,
-    setFocus,
   } = useForm<ProjectFormValues>({
     defaultValues: {
       // Project Info

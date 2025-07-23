@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-export const loginAPI = async (email, password) => {
+export const loginAPI = async (email: any, password: any) => {
   try {
     console.log("Sending login data:", email, password);
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
@@ -17,7 +17,7 @@ export const loginAPI = async (email, password) => {
       toast.error("Login failed");
     }
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("API error:", error);
     toast.error(
       "Login failed: " + (error.response?.data?.message || error.message),
@@ -26,7 +26,7 @@ export const loginAPI = async (email, password) => {
   }
 };
 
-export const forgetPasswordRequest = async (email) => {
+export const forgetPasswordRequest = async (email: any) => {
   try {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/request-password-reset`,
@@ -42,14 +42,18 @@ export const forgetPasswordRequest = async (email) => {
       toast.error("OTP request failed");
     }
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("API error:", error);
     toast.error(error.response?.data?.message || error.message);
     return error.response?.data;
   }
 };
 
-export const resetPasswordOtp = async (email, otp, newPassword) => {
+export const resetPasswordOtp = async (
+  email: any,
+  otp: any,
+  newPassword: any,
+) => {
   try {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/reset-password-otp`,
@@ -65,7 +69,7 @@ export const resetPasswordOtp = async (email, otp, newPassword) => {
       toast.error("Password reset failed");
     }
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("API error:", error);
     toast.error(error.response?.data?.message || error.message);
     return error.response?.data;

@@ -9,7 +9,7 @@ import {
   loginAPI,
   forgetPasswordRequest,
   resetPasswordOtp,
-} from "../../API/Auth/Auth.api.js";
+} from "../../API/Auth/Auth.api";
 import { HiOutlineMail } from "react-icons/hi";
 import { PiPasswordThin } from "react-icons/pi";
 import { FcLock } from "react-icons/fc";

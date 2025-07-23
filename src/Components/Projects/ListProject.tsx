@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, Modal, ModalHeader, ModalBody, Button } from "flowbite-react";
 import { MdDeleteForever } from "react-icons/md";
@@ -111,13 +111,13 @@ export const ListProject = () => {
               </button>
               <div className="mx-3 h-full w-full py-2 text-gray-600">
                 <h5 className="text-2xl tracking-tight text-gray-900 dark:text-white">
-                  {project.project.project_name}
+                  {project.project_name}
                 </h5>
                 <h5 className="mt-2 text-sm font-semibold">
                   Zone : {project.zones[0]?.title || "Null"}
                 </h5>
               </div>
-              {!project.project.fresh_project ? (
+              {!project.fresh_project ? (
                 <div className="flex justify-end">
                   <div>
                     <strong className="-me-[2px] -mb-[2px] inline-flex items-center gap-1 rounded-ss-xl rounded-ee-xl bg-indigo-600 px-3 py-1.5 text-white">

@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import fourzerofour from "./Auth/undraw_page-not-found_6wni.svg";
 

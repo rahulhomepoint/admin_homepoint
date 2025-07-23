@@ -51,7 +51,9 @@ export default function NavbarTab({ changeDrawer }: NavbarTabProps) {
       };
     }
   };
-  const username = localStorage.getItem("username") || " Guest"; // Replace with dynamic username if available
+  const username = localStorage.getItem("username") || " Guest"; // Replace with dynamic
+  const profileImage = localStorage.getItem("profileImage") || ""; // Replace with dynamic
+  // username if available
   const { greeting, icon } = getGreeting();
   return (
     <Navbar fluid className="bg-purple-200">
@@ -85,7 +87,7 @@ export default function NavbarTab({ changeDrawer }: NavbarTabProps) {
             <Avatar
               placeholderInitials="HP"
               alt="User settings"
-              img=""
+              img={profileImage || ""}
               rounded
             />
           }

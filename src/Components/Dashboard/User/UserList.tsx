@@ -87,11 +87,11 @@ export const UserList = () => {
   React.useEffect(() => {
     if (editUserData && showEditModal) {
       setEditForm({
-        name: editUserData.data.name,
-        email: editUserData.data.email,
-        role: editUserData.data.role,
-        status: editUserData.data.status,
-        profileImage: editUserData.data.profileImage,
+        name: editUserData.name,
+        email: editUserData.email,
+        role: editUserData.role,
+        status: editUserData.status,
+        profileImage: editUserData.profileImage,
       });
     }
   }, [editUserData, showEditModal]);
