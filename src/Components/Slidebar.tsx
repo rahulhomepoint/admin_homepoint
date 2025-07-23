@@ -38,6 +38,8 @@ import Associate_Developers from "./Dashboard/Home/AssociateDevelopers.jsx";
 import PaymentList from "./Dashboard/Home/PaymentList.js";
 import { Reviews } from "./Dashboard/Home/Reviews.js";
 import { UserList } from "./Dashboard/User/UserList.js";
+import { AddUser } from "./Dashboard/User/AddUser.js";
+import { MasterData } from "./Dashboard/MasterData.js";
 
 export default function Slidebar() {
   const [Drawer, setDrawer] = useState(false);
@@ -82,10 +84,7 @@ export default function Slidebar() {
                 </SidebarItem>
               </SidebarCollapse>
               <SidebarCollapse icon={HiUser} label="Users">
-                <SidebarItem
-                  icon={HiUserGroup}
-                  href="/dashboard/userlist"
-                >
+                <SidebarItem icon={HiUserGroup} href="/dashboard/userlist">
                   Users management
                 </SidebarItem>
                 <SidebarItem icon={HiUserAdd} href="/dashboard/add-user">
@@ -136,6 +135,8 @@ export default function Slidebar() {
             <Route path="banklist" element={<PaymentList />} />
             <Route path="reviews" element={<Reviews />} />
             <Route path="userlist" element={<UserList />} />
+            <Route path="add-user" element={<AddUser />} />
+            <Route path="master-data" element={<MasterData />} />
             <Route
               path="associate-developers"
               element={<Associate_Developers />}

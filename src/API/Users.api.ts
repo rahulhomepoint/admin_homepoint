@@ -43,4 +43,21 @@ export const usersApi = {
     });
     if (!res.ok) throw new Error("Failed to delete user");
   },
+
+  async createUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    role?: "admin" | "manager" | "user";
+    profileImage?: string;
+  }): Promise<User> {
+    const res = await fetch(`${API_BASE_URL}/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to create user");
+    const json = await res.json();
+    return json.data || json.user || json;
+  },
 };
